@@ -19,6 +19,9 @@ namespace ImageTiler
         [Option('o', "output", Required = false, DefaultValue = "tile.png", HelpText = "Output filename for tilemap (extension used for format selection")]
         public string OutputFilename { get; set; }
 
+        [ValueList(typeof(List<string>), MaximumElements = 3)]
+        public IList<string> InputFiles { get; set; }
+
         [HelpOption]
         public string GetUsage()
         {
@@ -38,6 +41,7 @@ namespace ImageTiler
             {
                 var options = new Options();
                 ParseOptions(args, options);
+
             }
             catch (Exception e)
             {
