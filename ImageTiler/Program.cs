@@ -76,7 +76,7 @@ namespace ImageTiler
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine("Use -h for help.");
                 Environment.Exit(CommandLine.Parser.DefaultExitCodeFail);
             }
         }
