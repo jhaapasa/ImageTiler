@@ -42,6 +42,7 @@ namespace ImageTiler
                 var options = new Options();
                 ParseOptions(args, options);
 
+                IEnumerable<string> fileNames = FileSearchExpand.ExpandFileSearchPatterns(options.InputFiles);
             }
             catch (Exception e)
             {
