@@ -2,6 +2,8 @@
 using CommandLine.Text;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,7 +18,7 @@ namespace ImageTiler
         [Option('w', "width", Required = false, DefaultValue = 1024, HelpText = "Width of tiled image in pixels")]
         public int Width { get; set; }
 
-        [Option('o', "output", Required = false, DefaultValue = "tile.png", HelpText = "Output filename for tilemap (extension used for format selection")]
+        [Option('o', "output", Required = false, DefaultValue = "tile.png", HelpText = "Output filename for tilemap (PNG format only!")]
         public string OutputFilename { get; set; }
 
         [ValueList(typeof(List<string>), MaximumElements = 3)]
@@ -42,7 +44,16 @@ namespace ImageTiler
                 var options = new Options();
                 ParseOptions(args, options);
 
+                Image canvas = new Bitmap(512, 512);
+                Graphics graphics = Graphics.FromImage(canvas);
                 IEnumerable<string> fileNames = FileSearchExpand.ExpandFileSearchPatterns(options.InputFiles);
+                foreach (var fileName in fileNames)
+                {
+                    Image img = Image.FromFile(fileName);
+                    graphics.DrawImage(img, 0, 0);
+                }
+
+                canvas.Save(options.OutputFilename, ImageFormat.Png);
             }
             catch (Exception e)
             {
