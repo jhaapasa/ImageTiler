@@ -15,8 +15,8 @@ namespace ImageTiler
         [Option('c', "columns", Required = false, DefaultValue = 4, HelpText = "Number of columns")]
         public int Columns { get; set; }
 
-        [Option('w', "width", Required = false, DefaultValue = 1024, HelpText = "Width of tiled image in pixels")]
-        public int Width { get; set; }
+        [Option('w', "tile-width", Required = false, DefaultValue = 128, HelpText = "Width of single tile in pixels")]
+        public int TileWidth { get; set; }
 
         [Option('o', "output", Required = false, DefaultValue = "tile.png", HelpText = "Output filename for tilemap (PNG format only!")]
         public string OutputFilename { get; set; }
@@ -43,14 +43,33 @@ namespace ImageTiler
             {
                 var options = new Options();
                 ParseOptions(args, options);
-
-                Image canvas = new Bitmap(512, 512);
-                Graphics graphics = Graphics.FromImage(canvas);
                 IEnumerable<string> fileNames = FileSearchExpand.ExpandFileSearchPatterns(options.InputFiles);
+                List<Image> imageList = new List<Image>();
+
                 foreach (var fileName in fileNames)
                 {
-                    Image img = Image.FromFile(fileName);
-                    graphics.DrawImage(img, 0, 0);
+                    imageList.Add(Image.FromFile(fileName));
+                }
+
+                int imageCount = imageList.Count();
+                double minAspect = imageList.Select(i => (double)i.Size.Width / (double)i.Size.Height).Min();
+                int tileHeight = Convert.ToInt32(Math.Round(options.TileWidth / minAspect));
+                int rows = imageCount / options.Columns + (imageCount % options.Columns > 0 ? 1 : 0);
+                Image canvas = new Bitmap(options.TileWidth * options.Columns, rows * tileHeight);
+                Graphics graphics = Graphics.FromImage(canvas);
+
+                int row = 0;
+                int col = 0;
+
+                foreach (var i in imageList)
+                {
+                    graphics.DrawImage(i, col * options.TileWidth, row * tileHeight, options.TileWidth, tileHeight);
+                    col = (col + 1) % options.Columns;
+
+                    if (col == 0)
+                    {
+                        row += 1;
+                    }
                 }
 
                 canvas.Save(options.OutputFilename, ImageFormat.Png);
